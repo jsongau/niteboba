@@ -28,7 +28,8 @@
   }
   function load() {
     if (loading) return loading;
-    var p1 = pageAll(SB + "niteboba_map_pins?select=s,n,c,la,lo,r,rc,gm,addr,pid,per&order=s").then(function (r) { shops = r; });
+    /* one shared download for every homepage widget (js/homepage/pins.js), own fetch as fallback */
+    var p1 = (window.BNPins ? window.BNPins.load() : pageAll(SB + "niteboba_map_pins?select=s,n,c,la,lo,r,rc,gm,addr,pid,per&order=s")).then(function (r) { shops = r; });
     var fd = window.FINDER_DATA && window.FINDER_DATA.locations;
     var p2 = fd ? Promise.resolve(fd.map(function (l) { return { n: l.city, la: l.lat, lo: l.lng, z: l.zips || [] }; }))
       : pageAll(SB + "search_locations?select=name,lat,lng,zip_codes&type=eq.city&market_area=in.(%22Greater%20Los%20Angeles%22,%22Inland%20Empire%22,%22Orange%20County%22,%22San%20Diego%20Region%22)&order=name")
