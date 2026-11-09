@@ -5,9 +5,11 @@ Everything the navigation renders is defined or derived here:
 
   * The six top-level items (SHOPS, BEST FOR, NEW, PICK FOR ME, GUIDES,
     RATINGS & MEETUPS), the persistent search field, and the pink "Tonight" CTA.
-  * Region + city lists and their counts, DERIVED at build time from the
-    ``var SHOPS = [...]`` array baked into ``directory/index.html`` (never
-    hand-copied, that array is the store truth for the static site).
+  * Region + city lists and their counts, DERIVED at build time from
+    ``js/finder-data.js`` (the build snapshot of Supabase ``niteboba``, written
+    by build/gen_finder_data.py). Open SoCal shops only; Las Vegas (Clark County)
+    is excluded. Must match Supabase view ``niteboba_site_stats``.
+    (changed 2026-11-08: was the stale 334-row SHOPS array in directory/index.html)
   * Each mega panel's columns, links and its one editorial feature cell.
 
 Importable:
@@ -27,6 +29,8 @@ import json
 import os
 import re
 from collections import Counter, defaultdict
+
+from regions import region_of, NAV_COUNTIES, NAV_NAME
 
 # --------------------------------------------------------------------------
 # Paths
@@ -59,12 +63,28 @@ CITIES_PER_REGION = 7  # <= 7 city links per region before the view-all
 
 
 def _load_shops():
-    """Parse the baked SHOPS array out of directory/index.html."""
-    html = open(_repo("directory/index.html"), encoding="utf-8").read()
-    m = re.search(r"var SHOPS\s*=\s*(\[.*?\]);", html, re.S)
-    if not m:
-        raise RuntimeError("Could not find `var SHOPS = [...]` in directory/index.html")
-    return json.loads(m.group(1))
+    """Open SoCal shops from js/finder-data.js (Supabase snapshot).
+
+    Returns rows shaped like the old SHOPS array: n (name), c (city),
+    cs (city slug), s (shop slug), ar (nav rail region or None for 805/Kern/
+    Imperial), plus has_page (a committed profile page exists).
+    """
+    raw = open(_repo("js/finder-data.js"), encoding="utf-8").read()
+    data = json.loads(raw[raw.index("{"):raw.rstrip().rstrip(";").rindex("}") + 1])
+    county = {}
+    for g in data["locations"]:
+        county.setdefault(g["city"], g["county"].replace(" County", ""))
+    rows = []
+    for s in data["shops"]:
+        if s.get("st") != "open":
+            continue
+        c = county.get(s["c"])
+        if c is None or c == "Clark":
+            continue
+        ar = NAV_NAME[region_of(c, s["c"])] if c in NAV_COUNTIES else None
+        rows.append({"n": s["n"], "c": s["c"], "cs": s["cs"], "s": s["sl"], "ar": ar,
+                     "has_page": os.path.exists(_repo(f"boba/ca/{s['cs']}/{s['sl']}/index.html"))})
+    return rows
 
 
 def compute_regions():
@@ -78,7 +98,8 @@ def compute_regions():
     by_region = defaultdict(Counter)   # region -> Counter(city -> n)
     city_slug = {}                     # city display name -> city slug
     for s in shops:
-        by_region[s["ar"]][s["c"]] += 1
+        if s["ar"]:
+            by_region[s["ar"]][s["c"]] += 1
         city_slug[s["c"]] = s["cs"]
 
     regions = []
@@ -86,7 +107,9 @@ def compute_regions():
         counter = by_region.get(name, Counter())
         meta = REGION_META[name]
         cities = []
-        for city, cnt in counter.most_common(CITIES_PER_REGION):
+        linkable = [(c, n) for c, n in counter.most_common()
+                    if os.path.exists(_repo(f"boba/ca/{city_slug[c]}/index.html"))]
+        for city, cnt in linkable[:CITIES_PER_REGION]:
             slug = city_slug[city]
             cities.append({
                 "name": city,
@@ -107,6 +130,9 @@ def compute_regions():
 
 
 REGIONS, TOTAL_SHOPS = compute_regions()
+# Cities with at least one open SoCal shop: the same definition as Supabase
+# niteboba_site_stats.socal_cities_with_shops, so baked HTML and live JS agree.
+CITY_COUNT = len({s["c"] for s in _load_shops()})
 
 # The one featured house, the SHOPS panel's editorial cell.
 FEATURED_SHOP = {
@@ -359,14 +385,13 @@ def build_search_index():
     """
     shops = _load_shops()
 
+    # Only shops whose profile page exists, so search never links a 404.
     shop_rows = [
         {"n": s["n"], "c": s["c"], "u": f"/boba/ca/{s['cs']}/{s['s']}/"}
-        for s in shops
+        for s in shops if s["has_page"]
     ]
 
-    # Cities: the 46 canonical cities that have shop rows AND a /boba/ca/*
-    # page. Two extra dirs (alhambra, hacienda-heights) are all-closed and are
-    # excluded so the count matches the site's stated "46 cities".
+    # Cities: every city with an open shop AND a /boba/ca/* page.
     city_name = {}
     for s in shops:
         city_name[s["cs"]] = s["c"]
@@ -627,7 +652,7 @@ def render_header():
       <button class="bn-overlay-esc" type="button" data-bn-search-close aria-label="Close search">Esc</button>
     </form>
     <div class="bn-results" id="bn-results" role="listbox" aria-label="Results">
-      <p class="bn-results-empty" data-bn-empty>Type to search 334 shops, 46 cities, pages and ingredients.</p>
+      <p class="bn-results-empty" data-bn-empty>Type to search {TOTAL_SHOPS:,} shops, {CITY_COUNT} cities, pages and ingredients.</p>
     </div>
   </div>
 </div>

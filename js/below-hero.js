@@ -328,8 +328,9 @@ function renderDir(){
   SHOPS.forEach(s=>{const r=regionOf(s);byReg[r]=(byReg[r]||0)+1;(byCity[s.cs]=byCity[s.cs]||{c:s.c,cs:s.cs,n:0}).n++;});
   const total=SHOPS.length, cities=Object.keys(byCity).length, regs=Object.keys(byReg).length;
   const h=$('#dirH2');if(h)h.textContent='Find boba shops near you.';
-  const l=$('#dirLede');if(l)l.textContent=`${total} boba shops across ${cities} Southern California cities, hours checked against official sources. Search by city, shop, or drink, filter chains or independents, and keep a list.`;
-  const ar=$('#dirAreas');if(ar){ar.innerHTML='';
+  /* W1 2026-11-08: the count line and region tiles are baked by build/apply_counts.py from the
+     shared region rule (build/regions.py); re-deriving them here used a different SGV list. */
+  const ar=null;if(ar){ar.innerHTML='';
     Object.keys(REGIONS).filter(k=>byReg[k]).sort((a,b)=>byReg[b]-byReg[a]).forEach(k=>{const R=REGIONS[k];
       const a=document.createElement('a');a.className='dirx-area';a.href=BASE+R.path;a.target='_blank';a.rel='noopener';
       a.innerHTML=`<span class="da-n">${byReg[k]}</span><span class="da-t">${esc(R.name)}</span><span class="da-s">${esc(R.sub)}</span>`;ar.appendChild(a);});
@@ -431,10 +432,15 @@ function renderAll(){NOW=pacificNow();
   renderOpenNear();renderTrending();renderCAD();if(cStep===0)renderConcierge();renderWorth();renderHouse();renderDrinks();renderAfterTen();renderDir();renderKeep();wireSpin();ensureFinder();beltifyAll();}
 
 function normalizeSeed(){SHOPS=SEED.map(fromSeed).filter(s=>s.la);}
+/* W1 2026-11-08: the API returns at most 1,000 rows per request, and niteboba_finder holds
+   1,637 (incl. closed shops and Las Vegas). Ask for open SoCal shops only, page by page. */
 async function loadLive(){
-  try{const r=await fetch(ENDPOINT,{headers:{apikey:KEY,Authorization:'Bearer '+KEY}});if(!r.ok)throw 0;
-    const rows=await r.json();if(Array.isArray(rows)&&rows.length){SHOPS=rows.map(fromLive).filter(s=>s.la&&!isNaN(s.la));
-      renderAll();}}
+  try{let rows=[];
+    for(let off=0;off<10000;off+=1000){
+      const r=await fetch(ENDPOINT+'&status=eq.open&county=neq.Clark&order=s&limit=1000&offset='+off,{headers:{apikey:KEY,Authorization:'Bearer '+KEY}});
+      if(!r.ok)throw 0;const page=await r.json();if(!Array.isArray(page))throw 0;
+      rows=rows.concat(page);if(page.length<1000)break;}
+    if(rows.length){SHOPS=rows.map(fromLive).filter(s=>s.la&&!isNaN(s.la));renderAll();}}
   catch(e){}
 }
 normalizeSeed();
@@ -446,12 +452,13 @@ loadLive();
 ;
 /* live counts for page chrome */
 (function(){
-var U="https://hfvbeqlefwwjlrbyxpbj.supabase.co/rest/v1/niteboba_finder?select=c";
+/* W1 2026-11-08: read the one-row stats view. The old niteboba_finder?select=c read was
+   capped at 1,000 rows by the API (and included Las Vegas), which is how "998 shops" shipped. */
+var U="https://hfvbeqlefwwjlrbyxpbj.supabase.co/rest/v1/niteboba_site_stats?select=socal_open_shops,socal_cities_with_shops";
 var K="sb_publishable_wlfujszvn2logC3KNL3MsA_AW1F42kf";
 fetch(U,{headers:{apikey:K,Authorization:"Bearer "+K}}).then(function(r){return r.json()}).then(function(rows){
-  if(!rows||!rows.length||!rows.map)return;
-  var shops=rows.length,cities={};rows.forEach(function(r){cities[r.c]=1});
-  var nc=Object.keys(cities).length;
+  if(!rows||!rows[0]||!(rows[0].socal_open_shops>0))return;
+  var shops=rows[0].socal_open_shops.toLocaleString("en-US"),nc=rows[0].socal_cities_with_shops;
   var sub=document.querySelector(".arrival .sub");
   if(sub)sub.textContent=shops+" shops across "+nc+" cities. Real hours, honest picks, nothing paid to be here.";
   var fs2=document.getElementById("ft2Shops");if(fs2)fs2.textContent=shops;
@@ -460,8 +467,8 @@ fetch(U,{headers:{apikey:K,Authorization:"Bearer "+K}}).then(function(r){return 
   if(emp)emp.textContent="Type to search "+shops+" shops, "+nc+" cities, pages and ingredients.";
   [].slice.call(document.querySelectorAll("a")).forEach(function(a){
     var t=a.textContent.trim();
-    if(t==="All 334")a.textContent="All "+shops;
-    if(t==="All 334 shops")a.textContent="All "+shops+" shops";
+    if(/^All [\d,]+$/.test(t))a.textContent="All "+shops;
+    if(/^All [\d,]+ shops$/.test(t))a.textContent="All "+shops+" shops";
   });
 }).catch(function(){});
 })();

@@ -25,9 +25,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from nav_data import render_header
 UNIFIED_HEADER = render_header()
 
-# ---- region mapping (editorial; adjustable) ----
-SGV_CITIES = {"Arcadia","Covina","Pasadena","Walnut","Rowland Heights","Monterey Park","City of Industry",
-              "El Monte","Diamond Bar","Rosemead","San Gabriel","Baldwin Park","Temple City","Monrovia"}
+from regions import SGV_CITIES, region_of  # shared rule (build/regions.py)
 REGIONS = {
   "sgv":           {"label":"San Gabriel Valley","kicker":"The 626",
                     "blurb":"The densest boba in SoCal. Brown sugar, fruit tea, and Taiwanese dessert houses packed block to block."},
@@ -40,14 +38,6 @@ REGIONS = {
   "inland-empire": {"label":"Inland Empire","kicker":"IE",
                     "blurb":"Riverside and San Bernardino. Fewer shops, less competition, easier to find the good ones."},
 }
-def region_of(county, city):
-    if county == "Orange": return "orange-county"
-    if county == "San Diego": return "san-diego"
-    if county in ("Riverside","San Bernardino"): return "inland-empire"
-    if county == "Los Angeles":
-        return "sgv" if city in SGV_CITIES else "greater-la"
-    return "greater-la"
-
 INTENTS = [
   ("date-night","Date night","calmer rooms, seating, later hours"),
   ("first-date","First date","quiet enough to actually talk"),

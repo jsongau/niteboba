@@ -32,12 +32,12 @@
         + '<a class="near-go" href="' + maps + '" target="_blank" rel="noopener">Directions</a></li>';
     }).join("");
     show('<p class="near-head">Closest to you, sorted by distance</p><ul class="near-list">' + cards + '</ul>'
-      + '<a class="near-all" href="/directory/">See all 334 shops</a>');
+      + '<a class="near-all" href="/directory/">See every shop</a>');
     if (window.BobaSound && window.BobaSound.enabled) try { window.BobaSound.chime("reveal"); } catch (e) {}
   }
 
   function fail(msg) {
-    show('<p class="near-head">' + msg + '</p><a class="near-all" href="/directory/">Browse all 334 shops instead</a>');
+    show('<p class="near-head">' + msg + '</p><a class="near-all" href="/directory/">Browse every shop instead</a>');
   }
 
   btn.addEventListener("click", function () {

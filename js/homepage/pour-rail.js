@@ -16,7 +16,7 @@
   // Honest house facts only — every line traces to a claim already on the page.
   var HINTS = [
     "Turn the cards above for tonight's pick",
-    "334 rooms across 46 cities, checked and current",
+    "Real hours on every shop, synced from the source",
     "Every drink here comes from an official menu",
     "No shop pays to appear in this rotation"
   ];
