@@ -183,6 +183,36 @@
 @media (max-width:560px){.nf-row{flex-direction:column}.nf-card{flex-wrap:wrap}.nf-go{width:100%}}
 @media (prefers-reduced-motion: reduce){.btn-find,.nf-field input{transition:none}.btn-find.is-locating svg,.nf-loading::after{animation:none}}
 </style>
+<style id="tonightmap">
+/* W4 2026-11-08: "SoCal tonight" night map (js/homepage/tonight-map.js). Tokens from luxury-homepage.css. */
+.tm{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(0,1fr);gap:1.4rem;align-items:start;margin:.4rem 0 1.6rem}
+.tm-map{background:var(--obsidian,#0B0C0E);border:1px solid var(--hairline,rgba(197,164,109,.28));border-radius:3px;padding:.8rem}
+.tm-map svg{display:block;width:100%;height:auto}
+.tm-off circle{fill:rgba(244,239,231,.16)}
+.tm-on circle{fill:var(--champagne,#C5A46D)}
+.tm-last circle{fill:var(--neon,#ff2f6d)}
+.tm-legend{display:flex;flex-wrap:wrap;gap:.4rem 1rem;margin:.6rem 0 0;font-size:.78rem;color:var(--muted-dk,#8B8981)}
+.tm-legend span{display:inline-flex;align-items:center;gap:.4rem}
+.tm-legend i{width:8px;height:8px;border-radius:50%;display:inline-block}
+.lg-on{background:var(--champagne,#C5A46D)}.lg-last{background:var(--neon,#ff2f6d)}.lg-off{background:rgba(244,239,231,.3)}
+.tm-panel{background:var(--obsidian,#0B0C0E);border:1px solid var(--hairline,rgba(197,164,109,.28));border-radius:3px;padding:1.1rem 1.1rem 1rem}
+.tm-big{margin:0;font-family:"Fraunces",Georgia,serif;font-size:clamp(2.4rem,6vw,3.4rem);line-height:1;color:var(--gilt,#F4DDA2)}
+.tm-big span{font-size:1.1rem;color:var(--pearl,#F4EFE7);font-family:var(--sans,system-ui,sans-serif)}
+.tm-sub{margin:.5rem 0 1rem;color:var(--muted-dk,#8B8981);font-size:.9rem}
+.tm-rows{list-style:none;margin:0;padding:0;display:grid;gap:2px}
+.tm-rows a{display:grid;grid-template-columns:1fr auto;gap:.2rem .8rem;padding:.55rem .1rem;text-decoration:none;color:var(--pearl,#F4EFE7);border-bottom:1px solid rgba(197,164,109,.14)}
+.tm-rows a:hover .tm-r-name,.tm-rows a:focus-visible .tm-r-name{color:var(--gilt,#F4DDA2)}
+.tm-rows a:focus-visible{outline:2px solid var(--gilt,#F4DDA2);outline-offset:2px}
+.tm-r-name{font-size:.92rem}
+.tm-r-n{font-size:.88rem;color:var(--muted-dk,#8B8981)}.tm-r-n b{color:var(--champagne,#C5A46D)}
+.tm-bar{grid-column:1/-1;height:3px;background:rgba(244,239,231,.08);border-radius:2px;overflow:hidden}
+.tm-bar i{display:block;height:100%;background:var(--champagne,#C5A46D)}
+.tm-facts{display:flex;flex-wrap:wrap;gap:.3rem 1.4rem;margin:1rem 0 0}
+.tm-facts p{margin:0;font-size:.9rem;color:var(--pearl,#F4EFE7)}.tm-facts b{color:var(--neon,#ff2f6d);font-weight:600}
+#tmLateWrap b{color:var(--gilt,#F4DDA2)}
+.tm-note{margin:.8rem 0 0;font-size:.78rem;color:var(--muted-dk,#8B8981)}
+@media (max-width:860px){.tm{grid-template-columns:1fr}}
+</style>
 <style id="pourrail">
 /* THE NIGHT GUIDE rail, keyed to the invitation modal: aubergine panel with the
    orchid/imperial sheen, one gilt hairline on the top edge, rounded top corners,
@@ -684,6 +714,7 @@
         <a class="more" style="color:var(--gilt);border-color:var(--line-hi)" href="/near-me/">Open the boba map</a>
       </div>
     </div>
+    <div class="tm" id="tonightMap"></div>
     <p class="hint" id="onHint">Turn on your location above and we&rsquo;ll show the closest shops first.</p>
     <div class="fchips" id="onFilters" role="group" aria-label="Filter suggestions"></div>
     <div class="rail" id="onRail"></div>
@@ -935,7 +966,7 @@
      real dated event falls today; the site never invents a "Tonight" event. -->
 <!-- BUILD:EVENTS-TOAST:START -->
   <!-- BUILD:EVENTS-TOAST:END -->
-<script src="/js/homepage/society-data.js" defer></script><script src="/js/homepage/share.js" defer></script><script src="/js/homepage/black-book.js" defer></script><script src="/js/homepage/concierge.js" defer></script><script src="/js/homepage/navigation.js" defer></script><script src="/js/homepage/tonight-pour.js" defer></script><script src="/js/nb-events.js" defer></script><script src="/js/homepage/near-me.js" defer></script><script src="/js/homepage/pour-rail.js" defer></script>
+<script src="/js/homepage/society-data.js" defer></script><script src="/js/homepage/share.js" defer></script><script src="/js/homepage/black-book.js" defer></script><script src="/js/homepage/concierge.js" defer></script><script src="/js/homepage/navigation.js" defer></script><script src="/js/homepage/tonight-pour.js" defer></script><script src="/js/nb-events.js" defer></script><script src="/js/homepage/pins.js" defer></script><script src="/js/homepage/near-me.js" defer></script><script src="/js/homepage/tonight-map.js" defer></script><script src="/js/homepage/pour-rail.js" defer></script>
 <script src="/js/nav-midnight.js" defer></script>
 <script src="/js/below-hero.js" defer></script>
 <script src="/components/footer.js" defer></script>
