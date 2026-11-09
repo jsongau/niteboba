@@ -588,6 +588,7 @@ a{color:inherit}
 <span>&copy; 2026 Boba Night</span><span class="note">We don't take payment for placement on our best-for lists.</span>
 </div></footer>
 
+<script src="/js/nb-events.js"></script>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
 <script>
@@ -757,6 +758,7 @@ function renderList(){
   el("railC").textContent = openN?openN+" open now":"";
   el("list").innerHTML = rows.length?rows.map(shopCard).join(""):`<div class="empty">No boba shops match these filters. Widen the range or clear a filter.</div>`;
   el("footL").textContent = SHOPS.length+" SoCal shops · "+CITIES.length+" cities";
+  if(window.nbTrack&&state.label!=="__lens"){const _k=state.label+"|"+state.radius;if(_k!==window.__nbLastKey){window.__nbLastKey=_k;nbTrack("results_shown",{area:state.label,radius:state.radius,results:rows.length,open:openN,lat:state.center&&state.center.lat,lng:state.center&&state.center.lng});if(rows.length&&!openN)nbTrack("zero_open",{area:state.label,radius:state.radius,results:rows.length});if(note==="none-in-radius")nbTrack("widen_radius",{area:state.label,radius:state.radius,results:rows.length});}}
   drawMap();
 }
 
@@ -855,7 +857,7 @@ function drawMapLeaflet(){
     ANCH.addLayer(m);
   });
   rows.forEach(x=>{const s=x.s,sel=state.selected===s.slug;const m=L.marker([s.lat,s.lng],{icon:pinIcon(x,sel),zIndexOffset:sel?1000:0});
-    m.on("click",()=>selectShop(s.slug));
+    m.on("click",()=>{window.nbTrack&&nbTrack("shop_click",{slug:s.slug,rank:0,area:state.label,radius:state.radius});selectShop(s.slug);});
     m.on("mouseover",()=>hotCard(s.slug,true));m.on("mouseout",()=>hotCard(s.slug,false));
     (sel?FEAT:CLUSTER).addLayer(m);pinIndex[s.slug]=m;});
   sizeLens();
@@ -953,8 +955,8 @@ el("nearbtn").addEventListener("click",()=>{
   if(!("geolocation" in navigator)){toast("Location isn’t available. Type a city or ZIP.");return;}
   toast("Finding boba near you…");
   navigator.geolocation.getCurrentPosition(
-    p=>setCenter(p.coords.latitude,p.coords.longitude,"Near me",true),
-    ()=>toast("Couldn’t get your location. Type a city or ZIP instead."),
+    p=>{window.nbTrack&&nbTrack("location_set",{method:"gps",area:"Near me",lat:p.coords.latitude,lng:p.coords.longitude,radius:state.radius});setCenter(p.coords.latitude,p.coords.longitude,"Near me",true);},
+    ()=>{window.nbTrack&&nbTrack("location_set",{method:"denied"});toast("Couldn’t get your location. Type a city or ZIP instead.");},
     {enableHighAccuracy:true,timeout:8000});
 });
 
@@ -988,8 +990,8 @@ function renderAC(v){const cm=matches(v),sm=shopMatches(v);const ac=el("ac");
 function pickItem(it){
   if(it.dataset.kind==="shop"){const s=bySlug(it.dataset.slug);if(!s)return;
     q.value=s.name;el("clearx").hidden=false;
-    state.center={lat:s.lat,lng:s.lng};state.label=s.city||s.name;renderList();hideAC();selectShop(s.slug);return;}
-  q.value=it.dataset.nm;el("clearx").hidden=false;setCenter(+it.dataset.lat,+it.dataset.lng,it.dataset.nm,true);}
+    window.nbTrack&&nbTrack("shop_click",{slug:s.slug,rank:0,area:"search"});state.center={lat:s.lat,lng:s.lng};state.label=s.city||s.name;renderList();hideAC();selectShop(s.slug);return;}
+  const _nbm=/^\d/.test(q.value.trim())?"zip":"city";q.value=it.dataset.nm;el("clearx").hidden=false;window.nbTrack&&nbTrack("location_set",{method:_nbm,area:it.dataset.nm,lat:+it.dataset.lat,lng:+it.dataset.lng,radius:state.radius});setCenter(+it.dataset.lat,+it.dataset.lng,it.dataset.nm,true);}
 const pickCity=pickItem;
 function hideAC(){el("ac").classList.remove("show");}
 q.addEventListener("input",()=>{el("clearx").hidden=!q.value;renderAC(q.value);});
@@ -1017,7 +1019,8 @@ function selectShop(slug){const s=bySlug(slug);if(!s)return;
 window.selectShop=selectShop;
 function findNearAnchor(i){const a=ANCHORS[i];if(!a)return;if(MAP)MAP.closePopup();setCenter(a.la,a.lo,a.n,true);}
 window.findNearAnchor=findNearAnchor;
-el("list").addEventListener("click",e=>{const c=e.target.closest(".card");if(!c)return;if(e.metaKey||e.ctrlKey||e.shiftKey||e.button===1)return;e.preventDefault();selectShop(c.dataset.slug);});
+document.addEventListener("click",e=>{const a=e.target.closest&&e.target.closest("a.act.primary");if(a&&/(maps\.google\.|google\.com\/maps|goo\.gl\/maps|maps\.app\.goo\.gl)/.test(a.href||""))window.nbTrack&&nbTrack("directions_click",{slug:state.selected,area:state.label,radius:state.radius});},true);
+el("list").addEventListener("click",e=>{const c=e.target.closest(".card");if(!c)return;window.nbTrack&&nbTrack("shop_click",{slug:c.dataset.slug,rank:(+c.dataset.i)+1,area:state.label,radius:state.radius});if(e.metaKey||e.ctrlKey||e.shiftKey||e.button===1)return;e.preventDefault();selectShop(c.dataset.slug);});
 el("list").addEventListener("mouseover",e=>{const c=e.target.closest(".card");if(c)hotCard(c.dataset.slug,true);});
 el("list").addEventListener("mouseout",e=>{const c=e.target.closest(".card");if(c)hotCard(c.dataset.slug,false);});
 
@@ -1160,6 +1163,7 @@ let tT;function toast(m){const t=el("toast");t.textContent=m;t.classList.add("sh
 
 /* ---------- boot ---------- */
 function boot(){
+  if(!location.search)window.nbTrack&&nbTrack("location_set",{method:"default",area:state.label,radius:state.radius});
   if(HAS_L){initLeaflet();}else{el("svgmap").hidden=false;}
   renderList();
   /* deep link from profile pages: /near-me/?shop=<slug>&lat=&lng=&n=

@@ -7,6 +7,14 @@
 (function () {
   "use strict";
   var doc = document;
+  /* Vercel Web Analytics (Wave 0, 2026-11-08): cookieless pageviews on every page that loads this file. */
+  try {
+    if (!doc.querySelector('script[src="/_vercel/insights/script.js"]')) {
+      window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };
+      var vas = doc.createElement("script"); vas.defer = true; vas.src = "/_vercel/insights/script.js";
+      (doc.head || doc.documentElement).appendChild(vas);
+    }
+  } catch (e) {}
   function $(sel, root) { return (root || doc).querySelector(sel); }
   function $$(sel, root) { return Array.prototype.slice.call((root || doc).querySelectorAll(sel)); }
 
