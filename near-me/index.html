@@ -957,7 +957,7 @@ el("nearbtn").addEventListener("click",()=>{
   if(!("geolocation" in navigator)){toast("Location isn’t available. Type a city or ZIP.");return;}
   toast("Finding boba near you…");
   navigator.geolocation.getCurrentPosition(
-    p=>{window.nbTrack&&nbTrack("location_set",{method:"gps",area:"Near me",lat:p.coords.latitude,lng:p.coords.longitude,radius:state.radius});setCenter(p.coords.latitude,p.coords.longitude,"Near me",true);},
+    p=>{window.nbTrack&&nbTrack("location_set",{method:"gps",area:"Near me",lat:p.coords.latitude,lng:p.coords.longitude,radius:state.radius});setCenter(p.coords.latitude,p.coords.longitude,"Near me",true);try{history.replaceState(null,"",location.pathname);}catch(e){}},
     ()=>{window.nbTrack&&nbTrack("location_set",{method:"denied"});toast("Couldn’t get your location. Type a city or ZIP instead.");},
     {enableHighAccuracy:true,timeout:8000});
 });
@@ -993,7 +993,7 @@ function pickItem(it){
   if(it.dataset.kind==="shop"){const s=bySlug(it.dataset.slug);if(!s)return;
     q.value=s.name;el("clearx").hidden=false;
     window.nbTrack&&nbTrack("shop_click",{slug:s.slug,rank:0,area:"search"});state.center={lat:s.lat,lng:s.lng};state.label=s.city||s.name;renderList();hideAC();selectShop(s.slug);return;}
-  const _nbm=/^\d/.test(q.value.trim())?"zip":"city";q.value=it.dataset.nm;el("clearx").hidden=false;window.nbTrack&&nbTrack("location_set",{method:_nbm,area:it.dataset.nm,lat:+it.dataset.lat,lng:+it.dataset.lng,radius:state.radius});setCenter(+it.dataset.lat,+it.dataset.lng,it.dataset.nm,true);}
+  const _nbm=/^\d/.test(q.value.trim())?"zip":"city";q.value=it.dataset.nm;el("clearx").hidden=false;window.nbTrack&&nbTrack("location_set",{method:_nbm,area:it.dataset.nm,lat:+it.dataset.lat,lng:+it.dataset.lng,radius:state.radius});setCenter(+it.dataset.lat,+it.dataset.lng,it.dataset.nm,true);try{history.replaceState(null,"","?at="+slugify(it.dataset.nm));}catch(e){}}
 const pickCity=pickItem;
 function hideAC(){el("ac").classList.remove("show");}
 q.addEventListener("input",()=>{el("clearx").hidden=!q.value;renderAC(q.value);});
@@ -1189,6 +1189,15 @@ function boot(){
       }
     }
   }
+  /* W3 2026-11-08: shareable links. ?at=<city-slug> centers on a city; ?lat=&lng=&n= (no shop) on a spot. */
+  if(!qs){
+    const at=q.get("at");
+    if(at){const c=CITIES.find(x=>slugify(x.n)===at);
+      if(c){window.nbTrack&&nbTrack("location_set",{method:"city",area:c.n,lat:c.lat,lng:c.lng,radius:state.radius});
+        el("mapq").value=c.n;el("clearx").hidden=false;setCenter(c.lat,c.lng,c.n,true);}}
+    else{const la=parseFloat(q.get("lat")),ln=parseFloat(q.get("lng"));
+      if(isFinite(la)&&isFinite(ln))setCenter(la,ln,q.get("n")||"Your spot",true);}
+  }
   const m=location.hash.match(/#\/shop\/(.+)$/);if(m)openProfile(decodeURIComponent(m[1]));
   if(HAS_L)setTimeout(()=>MAP.invalidateSize(),120);
 }
@@ -1215,7 +1224,8 @@ boot();
       web:x.web||"",tel:x.tel||"",pl:x.pl,st:x.st,seed:x.s,pid:x.pid||"",
       per:(x.per||[]).filter(p=>p&&p[1]).map(p=>({d:p[0],o:p[1],c:p[2]||null}))}));
     if(live.length<=SHOPS.length)return;
-    SHOPS=live;
+    /* W3: a few places are listed twice in the data (same Google place id); keep one pin per place */
+    const seenPid={};SHOPS=live.filter(x=>{const k=x.pid||x.slug;if(seenPid[k])return false;seenPid[k]=1;return true;});
     CITIES.forEach(c=>{let n=0;for(const s of SHOPS){if(miles(c.lat,c.lng,s.lat,s.lng)<=5)n++;}c._n=n;});
     if(state.selected&&!bySlug(state.selected))state.selected=null;
     window.__nbLastKey="";  /* re-log results_shown with the full count for the funnel */

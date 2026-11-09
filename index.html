@@ -135,29 +135,53 @@
 <link rel="stylesheet" href="/components/footer.css">
 <style id="rootclip">#tonight{overflow-x:clip}#bh{overflow-x:clip}@media(max-width:1079px){.arrival-grid>.btn-map{margin-top:18px}}</style>
 <style id="findme">
-.find-row{display:flex;gap:.7rem;flex-wrap:wrap;align-items:center;margin:1.5rem 0 1rem}
-.btn-find{display:inline-flex;align-items:center;gap:.55rem;background:var(--syrup,#ff3f6f);color:#160611;
-  border:0;border-radius:3px;font-family:"Inter Tight",system-ui,sans-serif;font-weight:700;font-size:1.02rem;
-  letter-spacing:.01em;padding:.9rem 1.4rem;cursor:pointer;box-shadow:0 0 24px rgba(255,63,111,.34);
+/* W3 2026-11-08: "Where are you?" finder (js/homepage/near-me.js). Tokens from luxury-homepage.css. */
+.nf{margin:1.5rem 0 1rem;max-width:36rem;position:relative}
+.nf-label{display:block;font-family:"Fraunces",Georgia,serif;font-size:1.15rem;color:var(--pearl,#F4EFE7);margin:0 0 .6rem}
+.nf-row{display:flex;gap:.6rem;align-items:stretch}
+.nf-field{position:relative;flex:1;min-width:0}
+.nf-field input{width:100%;height:54px;padding:0 54px 0 1rem;border-radius:3px;border:1px solid var(--hairline,rgba(197,164,109,.28));
+  background:var(--smoked,#17191D);color:var(--pearl,#F4EFE7);font:500 1rem var(--sans,system-ui,sans-serif);box-shadow:var(--glow-in);transition:border-color .18s ease}
+.nf-field input::placeholder{color:var(--muted-dk,#8B8981)}
+.nf-field input:focus{outline:none;border-color:var(--gilt,#F4DDA2);box-shadow:0 0 0 3px rgba(244,221,162,.18)}
+.nf-submit{position:absolute;right:5px;top:5px;width:44px;height:44px;border-radius:2px;border:0;cursor:pointer;background:var(--gilt,#F4DDA2);color:var(--obsidian,#0B0C0E);display:grid;place-items:center}
+.nf-submit:focus-visible,.btn-find:focus-visible,.nf-go:focus-visible,.nf-main:focus-visible,.nf-all:focus-visible{outline:2px solid var(--gilt,#F4DDA2);outline-offset:2px}
+.btn-find{display:inline-flex;align-items:center;justify-content:center;gap:.55rem;background:var(--syrup,#ff3f6f);color:#160611;
+  border:0;border-radius:3px;font-family:"Inter Tight",system-ui,sans-serif;font-weight:700;font-size:.98rem;
+  letter-spacing:.01em;padding:0 1.1rem;min-height:54px;white-space:nowrap;cursor:pointer;box-shadow:0 0 24px rgba(255,63,111,.34);
   transition:box-shadow .18s ease,transform .18s ease}
-.btn-find svg{width:20px;height:20px}
+.btn-find svg{width:19px;height:19px}
 .btn-find:hover{box-shadow:0 0 36px rgba(255,63,111,.5);transform:translateY(-1px)}
 .btn-find.is-locating{opacity:.7;cursor:progress}
-.near-results{margin:1.3rem 0 0;max-width:34rem}
-.near-head{font-size:.72rem;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--champagne,#C5A46D);margin:0 0 .7rem}
-.near-loading{color:var(--muted-dk,#8B8981)}
-.near-list{list-style:none;margin:0;padding:0;display:grid;gap:1px;background:var(--line-dk,rgba(244,239,231,.14));border:1px solid var(--line-dk,rgba(244,239,231,.14));border-radius:3px;overflow:hidden}
-.near-card{display:flex;align-items:center;justify-content:space-between;gap:.8rem;background:var(--obsidian,#0B0C0E);padding:.85rem 1rem}
-.near-card:hover{background:#141519}
-.near-main{flex:1;min-width:0;display:flex;flex-direction:column;gap:.2rem;text-decoration:none}
-.near-name{font-family:"Fraunces",Georgia,serif;font-size:1.05rem;color:var(--pearl,#F4EFE7);line-height:1.2}
-.near-meta{display:flex;align-items:center;gap:.45rem;font-size:.72rem;letter-spacing:.06em;text-transform:uppercase;color:var(--muted-dk,#8B8981)}
-.near-dot{width:3px;height:3px;border-radius:50%;background:var(--champagne,#C5A46D)}
-.near-open{color:#A8D8BC}.near-vg{color:#D8C79A}
-.near-go{flex:none;font-size:.8rem;font-weight:600;color:var(--pearl,#F4EFE7);border:1px solid var(--line-dk,rgba(244,239,231,.22));border-radius:2px;padding:.5rem .8rem;text-decoration:none;white-space:nowrap}
-.near-go:hover{border-color:var(--syrup,#ff3f6f);color:var(--syrup,#ff3f6f)}
-.near-all{display:inline-block;margin-top:.9rem;font-size:.85rem;color:var(--champagne,#C5A46D);text-decoration:underline;text-underline-offset:3px}
-@media (prefers-reduced-motion: reduce){.btn-find{transition:none}}
+.btn-find.is-locating svg{animation:nfpulse 1s ease infinite}
+@keyframes nfpulse{50%{opacity:.35}}
+.nf-ac{position:absolute;z-index:20;left:0;right:0;top:58px;margin:0;padding:6px;list-style:none;background:var(--smoked-2,#1F2228);
+  border:1px solid var(--hairline,rgba(197,164,109,.28));border-radius:3px;box-shadow:var(--lift)}
+.nf-opt{padding:.75rem;border-radius:2px;cursor:pointer;color:var(--pearl,#F4EFE7)}
+.nf-opt.is-on,.nf-opt:hover{background:rgba(197,164,109,.14)}
+.nf-sub{color:var(--muted-dk,#8B8981);font-size:.85rem}
+.near-results{margin:1.2rem 0 0}
+.nf-head{margin:0 0 .7rem;color:var(--muted-dk,#8B8981);font-size:.95rem}.nf-head b{color:var(--pearl,#F4EFE7);font-weight:600}
+.nf-loading::after{content:"";display:inline-block;width:12px;height:12px;margin-left:8px;border:2px solid var(--champagne,#C5A46D);border-right-color:transparent;border-radius:50%;animation:nfspin .8s linear infinite;vertical-align:-1px}
+@keyframes nfspin{to{transform:rotate(360deg)}}
+.nf-list{list-style:none;margin:0;padding:0;display:grid;gap:8px}
+.nf-card{display:flex;align-items:center;gap:.7rem;background:var(--smoked,#17191D);border:1px solid var(--hairline,rgba(197,164,109,.28));border-radius:3px;padding:.8rem .8rem .8rem 1rem}
+.nf-main{flex:1;min-width:0;display:flex;gap:.8rem;align-items:flex-start;text-decoration:none}
+.nf-rank{font-family:"Fraunces",Georgia,serif;font-size:1.35rem;color:var(--champagne,#C5A46D);line-height:1.1;min-width:1ch}
+.nf-body{display:flex;flex-direction:column;gap:.25rem;min-width:0}
+.nf-name{font-family:"Fraunces",Georgia,serif;font-size:1.1rem;line-height:1.2;color:var(--pearl,#F4EFE7);overflow-wrap:anywhere}
+.nf-meta{font-size:.84rem;color:var(--muted-dk,#8B8981);display:flex;flex-wrap:wrap;align-items:center;gap:.4rem}
+.nf-open{color:var(--champagne,#C5A46D);font-weight:600;display:inline-flex;align-items:center;gap:.4rem}
+.nf-open i{width:7px;height:7px;border-radius:50%;background:var(--champagne,#C5A46D)}
+.nf-open.is-soon{color:var(--neon,#ff2f6d)}.nf-open.is-soon i{background:var(--neon,#ff2f6d)}
+.nf-dot{width:3px;height:3px;border-radius:50%;background:var(--old-gold,#8E734B)}
+.nf-star{font-size:.84rem;color:var(--gilt,#F4DDA2)}.nf-rc{color:var(--muted-dk,#8B8981)}
+.nf-go{flex:none;display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:0 .9rem;border-radius:3px;background:var(--gilt,#F4DDA2);color:var(--obsidian,#0B0C0E);font-weight:600;font-size:.88rem;text-decoration:none}
+.nf-card+.nf-card .nf-go{background:transparent;color:var(--gilt,#F4DDA2);border:1px solid var(--hairline-hi,rgba(244,221,162,.5))}
+.nf-all{display:inline-block;margin-top:.9rem;color:var(--gilt,#F4DDA2);font-weight:600;font-size:.92rem;text-decoration:none;border-bottom:1px solid var(--hairline-hi,rgba(244,221,162,.5));padding-bottom:2px}
+.nf-more{margin:1rem 0 0}
+@media (max-width:560px){.nf-row{flex-direction:column}.nf-card{flex-wrap:wrap}.nf-go{width:100%}}
+@media (prefers-reduced-motion: reduce){.btn-find,.nf-field input{transition:none}.btn-find.is-locating svg,.nf-loading::after{animation:none}}
 </style>
 <style id="pourrail">
 /* THE NIGHT GUIDE rail, keyed to the invitation modal: aubergine panel with the
@@ -534,13 +558,26 @@
           <p class="eyebrow">Southern California boba, checked and current</p>
           <h1>Find a boba spot <span class="serif-hi">tonight</span>.</h1>
           <p class="sub">1,410 shops across 190 cities. Real hours, honest picks, nothing paid to be here.</p>
-          <div class="find-row">
-            <button class="btn btn-primary btn-find" id="findNear" type="button">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><circle cx="12" cy="10" r="3"/><path d="M12 21c-4-4.5-7-8-7-11a7 7 0 0 1 14 0c0 3-3 6.5-7 11z"/></svg>
-              Find boba near me
-            </button>
-            <a class="btn btn-line" href="/tools/roulette/">Surprise me</a>
-            
+          <div class="nf" id="bnFind">
+            <form role="search" autocomplete="off">
+              <label class="nf-label" for="bnFindQ">Where are you?</label>
+              <div class="nf-row">
+                <div class="nf-field">
+                  <input id="bnFindQ" type="text" inputmode="search" placeholder="City or ZIP, like Rowland Heights or 90630"
+                         role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="bnFindAC">
+                  <button class="nf-submit" type="submit" aria-label="Show open shops">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+                  </button>
+                  <ul class="nf-ac" id="bnFindAC" role="listbox" aria-label="Places" hidden></ul>
+                </div>
+                <button class="btn btn-primary btn-find" id="findNear" type="button">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/><circle cx="12" cy="12" r="7"/></svg>
+                  Use my location
+                </button>
+              </div>
+            </form>
+            <div id="nearResults" class="near-results" hidden aria-live="polite"></div>
+            <p class="nf-more"><a class="btn btn-line" href="/tools/roulette/">Surprise me</a></p>
           </div>
           <a class="btn-map" href="/near-me/" aria-label="Open the boba map">
   <svg class="bm-bg" viewBox="0 0 480 128" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
@@ -563,7 +600,6 @@
   </span>
   <span class="bm-go" aria-hidden="true">&rsaquo;</span>
 </a>
-          <div id="nearResults" class="near-results" hidden aria-live="polite"></div>
         </div>
         <div class="arrival-media reveal">
           <div class="imp-deck" id="impDeck" aria-label="Turn a card to pick a spot and a drink">
@@ -899,7 +935,7 @@
      real dated event falls today; the site never invents a "Tonight" event. -->
 <!-- BUILD:EVENTS-TOAST:START -->
   <!-- BUILD:EVENTS-TOAST:END -->
-<script src="/js/homepage/society-data.js" defer></script><script src="/js/homepage/share.js" defer></script><script src="/js/homepage/black-book.js" defer></script><script src="/js/homepage/concierge.js" defer></script><script src="/js/homepage/navigation.js" defer></script><script src="/js/homepage/tonight-pour.js" defer></script><script src="/js/homepage/near-me.js" defer></script><script src="/js/homepage/pour-rail.js" defer></script>
+<script src="/js/homepage/society-data.js" defer></script><script src="/js/homepage/share.js" defer></script><script src="/js/homepage/black-book.js" defer></script><script src="/js/homepage/concierge.js" defer></script><script src="/js/homepage/navigation.js" defer></script><script src="/js/homepage/tonight-pour.js" defer></script><script src="/js/nb-events.js" defer></script><script src="/js/homepage/near-me.js" defer></script><script src="/js/homepage/pour-rail.js" defer></script>
 <script src="/js/nav-midnight.js" defer></script>
 <script src="/js/below-hero.js" defer></script>
 <script src="/components/footer.js" defer></script>
